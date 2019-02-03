@@ -1,2 +1,7 @@
+added 6th line
 added 1st line to check git amend
+add 4th line
 changed content
+add 3rd line
+add 4th line
+add 5th line
