@@ -2,3 +2,5 @@ add vaanya
 
 add priyanka
 add abhishek
+add for stash
+find a list of files that has changed in a particular commit in 2.txt
