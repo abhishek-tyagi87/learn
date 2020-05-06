@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
-RUN apt-get update
+FROM busybox
+WORKDIR /abhishek
 ENV kamlesh=kamlesh
-CMD ["/bin/sh","-c " ,"sleep 5000"]
+CMD ["/busybox/sh","-c " ,"sleep 5000"]
