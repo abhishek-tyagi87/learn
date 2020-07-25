@@ -1,1 +1,314 @@
+###############For cloud form:
+td-agent-3.6.0-0.el7.x86_64
+
+<source>
+  format  /(?<message>.*)$/
+  @type tail
+  path /var/www/miq/vmdb/log/evm.log
+  tag td.cfme.access
+</source>
+
+<match *.**>
+  @type forward
+  <server>
+    host 10.177.56.23
+    port 24224
+  </server>
+  heartbeat_type tcp
+  @log_level debug
+</match>
+
+
+
+############################
+
+Check index data in kibana:
+
+GET fluentd.openstack.cinder.api/_search
+GET <index_name>/_search
+Targeted account citi-icam-dev Account (id-citi-icam-dev-account)
+
+Targeted namespace kube-system
+
+Configuring kubectl ...
+Property "clusters.citi-icam-dev" unset.
+Property "users.citi-icam-dev-user" unset.
+Property "contexts.citi-icam-dev-context" unset.
+Cluster "citi-icam-dev" set.
+User "citi-icam-dev-user" set.
+Context "citi-icam-dev-context" created.
+Switched to context "citi-icam-dev-context".
+OK
+Server details:
+(jump server)52.117.172.71 root/ pM0dularc , (server) 10.177.56.23 root/elkstack123 , client (10.177.56.17 root/pM0dularc)
+
+Path in director where we  need to change for fluentd container in   client (10.177.56.17 root/pM0dularc):
+:
+/var/lib/config-data/puppet-generated/fluentd/etc/fluentd/config.d/300-openstack-matches.conf
+
+300-openstack-matches.conf:
+
+#######################################################  
+Error:
+
+detached forwarding server" every time on Forwarder and unable to flush buffer
+
+
+Solution:
+
+Add    heartbeat_type tcp   in below file.
+
+#########################  
+
+
+# This file is managed by Puppet, do not edit manually.
+<match **>
+  <server>
+    host 10.177.56.23
+    port 24224
+  </server>
+  heartbeat_type tcp  ---------------> will use tcp otherwise it will use udp as default(detaches error will come if not change to this value)
+  @log_level debug   -------------------> for debugging
+  @type forward
+</match>
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------
+At server level for debugging:
+
+
+# In v1 configuration, type and id are @ prefix parameters.
+# @type and @id are recommended. type and id are still available for backward compatibility
+
+<source>
+  @type forward
+  port 24224
+  bind 10.177.56.23
+  log_level  debug
+</source>
+
+<match openstack.**>
+   @type file
+   path /var/log/fluent/1/fluentd_osp
+   compress gzip
+</match>
+----------------------------------------------------------------------------
+
+
+
+
+
+
+
+ /var/lib/config-data/fluentd/etc/fluentd/config.d/200-openstack-filters.conf
+
+()[root@overcloud-controller-1 /]$ fluentd --version
+fluentd 0.12.41
+
+
+[root@elkstack ~]# 
+[root@elkstack ~]# rpm -qa |grep -i fluentd
+fluentd-0.12.41-1.el7.noarch
+[root@elkstack ~]# 
+
+
+Elastic search:
+
+Abhishek Tyagi 8:06 PM
+ :elasticsearch: elasticsearch-7.4.2-1.x86_64,
+ kibana:  kibana-7.4.2-1.x86_64, 
+td-agent(stable fluentd):  td-agent-3.5.1-0.el7.x86_64
+
+gem install fluent-plugin-elasticsearch -v 1.5.0
+
+
+
+Check Elasticsearch index :
+ curl http://10.177.56.23:9200/_cat/indices?v
+
+Check logs on port:
+sudo tcpdump -i eth0 tcp port 24224 -X -s 0 -nn (from fluentd to fluend aggregator)
+sudo tcpdump -i eth0 tcp port 9200 -X -s 0 -nn(from fluentd to elasticsearch)
+
+
+
+For ceph:
+(?<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d+)(?<message>.*)$
+
+
+
+#########################################################################
+1) "source": where all the data come from:
+ Receive events from 24224/tcp
+# This is used by log forwarding and the fluent-cat command
+<source>
+  @type forward    ----------------forward means receive events from tcp
+  port 24224
+</source>
+
+# http://this.host:9880/myapp.access?json={"event":"data"}
+<source>
+  @type http            ----------------http means receive events from http
+  port 9880
+</source>
+
+
+**Each source directive must include a @type parameter. The @type parameter specifies which input plugin to use.
+
+The source submits events into the Fluentd's routing engine. An event consists of three entities: tag, time and record. 
+
+
+(2) "match": Tell fluentd what to do!:
+
+The "match" directive looks for events with matching tags and processes them. 
+Fluentd's standard output plugins include file and forward
+Each match directive must include a match pattern and a @type parameter.
+ Only events with a tag matching the pattern will be sent to the output destination (in the above example, only the events with the tag "myapp.access" is matched. See the section below for more advanced usage). 
+The @type parameter specifies the output plugin to use.
+
+# Match events tagged with "myapp.access" and
+# store them to /var/log/fluent/access.%Y-%m-%d
+# Of course, you can control how you partition your data
+# with the time_slice_format option.
+<match myapp.access>
+  @type file
+  path /var/log/fluent/access
+</match>
+
+
+(3) "filter": Event processing pipeline:
+
+The "filter" directive has same syntax as "match" but "filter" could be chained for processing pipeline. Using filters, event flow is like below:
+
+Input -> filter 1 -> ... -> filter N -> Output
+
+
+  
+ELAstic search cluster:(https://medium.com/@duy.do/how-elasticsearch-cluster-works-97d537071b87)          
+
+
+Besides that, the nodes are able to talk to external world using JSON “language” over HTTP.
+Every node in the cluster knows about the other nodes within the cluster, they talk to others directly using the native Elasticsearch language over TCP. This is known as a full connected mesh topology:
+
+
+The master node is responsible for creating, deleting indices, adding the nodes or remove the nodes from the cluster. Each time a cluster state is changed, the master node broadcasts the changes to other nodes in the cluster. There is only one 
+master node in the cluster at a time.
+
+
+The data node is responsible for holding the data in the shards and performing data related operations such as create, read, update, delete(CRUD), search, and aggregations. We can have many data nodes in the cluster. If one of the data nodes stops, the cluster still operates and re-organizes the data on other nodes.
+
+
+The client node is responsible for routing the cluster-related requests to the master node and the data-related requests to the data nodes, it acts as a “smart router”. The client node does not hold any data, it also cannot become the master 
+node.
+
+
+
+
+
+
+
+
+   
+
+
+The tribe node is special type of client node that is able to talk to multiple clusters to perform search and other operations.
+
+The ingest node is responsible for pre-processing documents before the actual indexing takes into account.
+
+
+Add a Node to the Cluster
+When we start a node, the node is starting to ping all the nodes in the cluster for finding the master node. Once the master is found, it will ask the master to join by sending a join request; the master accepts it as a new node of the cluster and then notify all the nodes in the cluster about presense of the new node, and finally the new node connects to all other nodes.
+If the joined node is a data node, the master will reallocate the data evenly across the nodes.
+
+Remove a Node from the Cluster
+If we stop a node or a node in the cluster is unresponsive in specific amout of time, the master node will remove it from the cluster and reallocate the data if the removed node is a data node.
+
+You might be curious about how the master node knows if other nodes in the cluster are still alive. The master has a fault detection machanism, it pings all the other nodes in the cluster and verify that they are alive or not.
+And about the master, what happens if it stops or has encountered a problem? Same the master node, each node in the cluster also have a fault detection machanism, it pings to master to verify if its still alive. If the master is not alive, other master-eligible nodes will be elected new master to replace the down one within seconds.
+
+
+
+For Provides explanations for shard allocations in the cluster.
+https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-allocation-explain.html
+
+
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-stats.html
+
+https://www.elastic.co/blog/how-many-shards-should-i-have-in-my-elasticsearch-cluster
+
+
+
+
+ClosedChannelException   error in elasticsearch data:
+
+
+
+
+Tls config path in es client pod:
+ /usr/share/elasticsearch/config/tls
+
+
+
+ELASTICSEARCH API:(Elasticsearch Tutorial | Getting Started with Elasticsearch | ELK Stack Training | Edureka)
+
+
+
+1.Document api: used to peform operation index (GET,PUT,DELETE API)
+ 2 type of document api:
+	a. Single document api (PUT /index_name/type/id/  to create document ,GET /index_name/type/id to get document, DELETE /index_name/type/id to delete document)
+   b. Multi document api
+
+2 search api:
+	a. Multi index 
+	b. Multi type
+	c. Uri search ((GET /index_name/type/_search?q=year:2011)
+
+3.aggregation : aggregation collects all the data which is selected  by search api,this framework consist of many building blocks called aggregator,which helps in building complex summaries of the data
+	a. Bucketing
+	b. Metric
+	c. Matrix
+	d. pipeline
+	
+
+4.index api: responsible for manageing all aspect of index like setting,aliases,mapping,index template
+egLCreate index,delete index,get index,
+
+
+
+	5. Cluster api: used to get cluster information about its cluster and nodes and making changes in them.
+Cluster stats api  used to check cluster health:
+
+GET /_cluster/stats?human&pretty  
+
+GET _cluster/health?pretty
+
+
+
+Query dsl: two type 
+	a. Leaf query clauses
+	b. Compound query clauses 
+
+
+
+
+
+Search query in dev tool:
+
+GET kube-system-2019.07.08/_search
+{
+  "query": {
+    "match": {
+      "log": "failed"
+      
+    }
+  }
+  
+}
 
