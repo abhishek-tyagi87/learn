@@ -1,2 +1,49 @@
+July 25 2020:
 
-July 25 ooops concept from orielly : https://learning.oreilly.com/videos/java-to-python/9781789611960/9781789611960-video4_1
+OOPS concept : file is /home/abhishek/python_test/oops.py
+ooops concept from orielly : https://learning.oreilly.com/videos/java-to-python/9781789611960/9781789611960-video4_1
+
+multiple inheritance and abstract class
+polymorphism - duck typing
+##########
+defien Emptyclass:
+
+class Book:
+ pass
+ 
+book1=Book()   #define instance
+book2=Book()    define instance
+
+############
+
+####### constructor(__init__ is called constructor)
+
+class Book:
+  def __init__(self,name)   # here self is current object
+    self.name = name
+    
+  def __repr__(self):   # represenatation method
+   return repr(self.name)
+ 
+ book1=Book("this is python 2.0")
+ book2 =Book("this is python 3.0")
+ 
+ print(book1)
+ print(book2)
+ 
+ 
+ ######## simple python class with multiple parameter
+ 
+ class Book:
+  def __init__(self,name,copies):
+    self.name=name
+    self.copies=copied
+  
+  def __repr__(self):
+   return repr((self.name,self.copied))  #  () creating tuple for returing value
+   
+book1=Book('python',3)
+print(book1)
+
+##############################
+ 
