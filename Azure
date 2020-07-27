@@ -1,1 +1,18 @@
+azure networking lives in single region
+
+networking:  Vnet ---> subnet ---> vm
+external load balancer will expose to vm to outsideworld
+internal LB , app gateway
+Network security group(NSG , rule based firewall) for incoming and outgoing traffic
+VPN/expresee route gateway --> to connect to private or another region
+
+Vnet:
+    Logical isolation of network segment
+    create subnet and isolate traffic using Network security group(NSG)
+    provide larger CIDR /16,
+    Vnet support static and dynamic ip allocation but recommended is dyanamic,
+    support for internal load balancer
+    support for dns( azure provide default dns for resource ,but  u can use your own dns)
+    support for 
+
 
