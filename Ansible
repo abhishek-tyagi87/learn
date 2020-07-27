@@ -1,1 +1,68 @@
+25 July 2020:  
+#################################################################
+Ansible Galaxy:  it is repo where u will get roles and playbooks
+################################################################
+Config rolepath in ansible.cfg(/etc/ansible/ansible.cfg):
+
+roles_path= /etc/ansible/roles
+
+############################
+
+Search role in ansible-galaxy:
+
+Ansible-galaxy search <role-name>
+
+Install role from ansible-galaxy:
+
+Ansible-galaxy install <role-name> -p /roles  (install role in current directory)
+
+####check galaxy role info:
+ansible-galaxy info <role-name>
+
+### if u want to use galaxy role as well from github then use requirement.yaml :
+requirement.yaml file ##
+#from galaxy
+src: username_playbookname
+src: username_playbookname
+
+#from github:
+src: https://github.com/abhishek
+##
+then use  below command: ansible-galaxy install -r requirment.yaml
+
+
+############## check role:
+
+ ansible-galaxy list
+################
+To check role config :
+Ansible-config  dump |grep ROLE
+
+##########
+
+
+##############################################################
+organzing playbook   https://learning.oreilly.com/videos/practical-ansible-solutions/9781788476904/9781788476904-video3_1
+#############################################################
+{{ variable_name}}
+
+take variables from file using "vars_files" directive
+eg:
+vars_files:
+ - all_variables.yaml
+ 
+ basic.yaml
+ ---
+ - hosts:
+   gather_facts:
+   remote_user:
+   vars_files:
+   - all.yaml
+   tasks:
+   
+   
+ 
+ 
+
+
 
